@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Runtime.CompilerServices;
 using OpenTelemetry.ResourceDetectors.Container;
 using OpenTelemetry.Resources;
@@ -23,6 +24,7 @@ namespace OpenTelemetry.AutoInstrumentation.Configurations;
 internal static class ResourceConfigurator
 {
     internal const string ServiceNameAttribute = "service.name";
+    internal const string ServiceInstanceIdAttribute = "service.instance.id";
 
     public static ResourceBuilder CreateResourceBuilder(IReadOnlyList<ResourceDetector> enabledResourceDetectors)
     {
@@ -55,6 +57,12 @@ internal static class ResourceConfigurator
         {
             // service.name was not configured yet use the fallback.
             resourceBuilder.AddAttributes(new KeyValuePair<string, object>[] { new(ServiceNameAttribute, ServiceNameConfigurator.GetFallbackServiceName()) });
+        }
+
+        if (!resource.Attributes.Any(kvp => kvp.Key == ServiceInstanceIdAttribute))
+        {
+            // service.instance.id was not configured yet use the uuid.
+            resourceBuilder.AddAttributes(new KeyValuePair<string, object>[] { new(ServiceInstanceIdAttribute, Guid.NewGuid().ToString()) });
         }
 
         return resourceBuilder;
